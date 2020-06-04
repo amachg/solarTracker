@@ -3,36 +3,14 @@
 Φωτοαντίσταση LDR (light dependent resistor) από θειούχο κάδμιο (cadmium sulfide - CdS).
 Η φωτοαντίσταση είναι μια μεταβλητή αντίσταση η τιμή της οποίας 
 αλλάζει ανάλογα με το φως που πέφτει πάνω σε αυτή.
-Η τιμή της αντίστασης μικραίνει όταν στον χώρο υπάρχει πολύς φωτισμός
-αντίθετα μεγαλώνει όσο μικραίνει ο φωτισμός.
+Η τιμή της αντίστασης μικραίνει όταν στον χώρο υπάρχει πολύς φωτισμός, αντίθετα μεγαλώνει όσο μικραίνει ο φωτισμός.
+Για παράδειγμα:
   0 Lx -> 1-5 ΜΩ
  10 Lx -> 8-20 KΩ
 100 Lx -> 1-2 KΩ
 
-Ldr Pin 1 –> Arduino 5V μέσω αντίστασης 10K & Arduino Pin A0 
-Ldr Pin 2 –> Arduino Ground
-The Arduino, with its built-in ADC (Analog to Digital Converter),
-then converts the analog voltage from 0-5V into a digital value in the range of 0-1023)
-
-If the LDR is hit with a ton of light and is reading only 1K of resistance,
-the 10K resistor is going to soak up 10 times as much of that 5V.
-So the LDR would only get .45V (analogRead of 92).
-
-And if it is in a dark room, the LDR may be 40K or resistance,
-so the LDR will soak up 4 times as much of that 5V as the 10K resistor.
-So the LDR would get 4V (analogRead of 818).
-
-Examples
-Illuminance	Surfaces illuminated by:
-1.0 lux	Full moon on a clear night
-50 lux	Family living room lights
-80 lux	Office building hallway/toilet lighting
-100 lux	Very dark overcast day
-320–500 lux	Office lighting
-400 lux	Sunrise or sunset on a clear day.
-1000 lux	Overcast day; typical TV studio lighting
-10000–25000 lux	Full daylight (not direct sun)
-32000–100000 lux	Direct sunlight
+LDR Pin 1 –> Arduino 5V, μέσω αντίστασης 10K & Arduino ακροδέκτης A0 
+LDR Pin 2 –> Arduino Γη, ακροδέκτης GND 
 
 */
 #include <Braccio.h>
@@ -40,7 +18,7 @@ Illuminance	Surfaces illuminated by:
 // Περιλαμβάνει το "servo.h" από τη βιβλιοθήκη "Servo".
 
 Servo basi;       // Κινητήρας βάσης
-Servo omos;       // ώμου
+Servo omos;       // Κινητήρας ώμου
 
 const int LDR_B_Pin = A0;     // ακροδέκτης Βορρά
 const int LDR_N_Pin = A1;     // Νότου
@@ -51,22 +29,22 @@ const int megistiMetrisiAisthitira = 1023;
 
 // κάτω φράγμα απόρριψης θορύβου μέτρησης, >15 για σκοτάδι, ~0 για πολύ φως
 const int nevrikotitaKinisis = 20;
-const int vradititaKinisis = 1;     // καθυστέρηση μεταξύ βημάτων, 1-50-3000 ms
+const int vradititaKinisis = 1;     // καθυστέρηση μεταξύ βημάτων, 1-50-3000 χιλιοστοδευτερόλεπτα (ms)
 const int vimaServo = 1;
 
 int gwnia_basis = 90;        // γωνία άξονα κινητήρα βάσης
-int gwnia_omou  = 90;        // ώμου
+int gwnia_omou  = 90;        // γωνία ώμου
 
 void setup() {
   Serial.begin(9600);
   Serial.println();
   Serial.println("Serial OK");
 
-  basi.attach(11);    // βύσμα M1-> ελεγκτή pin 11 (digital pwm)
-  omos.attach(10);    // βύσμα M2-> ελεγκτή pin 10 (digital pwm)  
+  basi.attach(11);    // βύσμα M1-> ελεγκτής ακροδέκτης 11 (digital pwm)
+  omos.attach(10);    // βύσμα M2-> ελεγκτής ακροδέκτης 10 (digital pwm)  
   digitalWrite(SOFT_START_CONTROL_PIN, HIGH);
   
-  basi.write(90);     // Αρχική κλίση άξονα 90 μοίρες
+  basi.write(90);     // Αρχική κλίση άξονα, 90 μοίρες
   omos.write(90);
   delay(5000);        // καθυστέρηση σε χιλιοστοδευτερόλεπτα (ms)
   
