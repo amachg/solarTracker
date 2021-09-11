@@ -39,9 +39,9 @@ const byte sensor3_Pin = 12;      //  Ανατολή
 const byte sensor4_Pin = 13;      //  Δύση
 
 // Ποσοστιαίο κατόφλι διαφοράς φωτεινότητας, δρα σαν φίλτρο απόρριψης μικροκινήσεων.
-const int katofliKinisis = 10; // (>=5%)
-const int kathisterisi_kinisis = 30; // καθυστέρηση σε χιλιοστοδευτερόλεπτα (>60)
-const int vimaServo = 1;              // βήμα περιστροφής σερβοκινητήρα (1..2)
+const int katofliKinisis = 10;          // ποσοστό %, πρέπει >=5
+const int kathisterisi_kinisis = 30;    // καθυστέρηση σε χιλιοστοδευτερόλεπτα, μάλλον >=60
+const int vimaServo = 1;                // βήμα περιστροφής σερβοκινητήρα (1..2)
 
 void setup() {
   
