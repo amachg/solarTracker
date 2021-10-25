@@ -33,15 +33,15 @@ const byte sensorAddressLOW   = 0x23;
 const byte sensorAddressHIGHT = 0x5C;
 
 // ακροδέκτες φωτοαισθητήρων
-const byte sensor1_Pin = 10;      //  Βορράς
-const byte sensor2_Pin = 11;      //  Νότος
-const byte sensor3_Pin = 12;      //  Ανατολή
-const byte sensor4_Pin = 13;      //  Δύση
+const byte Fotometro1_Pin = 10;      //  Βορράς
+const byte Fotometro2_Pin = 11;      //  Νότος
+const byte Fotometro3_Pin = 12;      //  Ανατολή
+const byte Fotometro4_Pin = 13;      //  Δύση
 
 // Ποσοστιαίο κατόφλι διαφοράς φωτεινότητας, δρα σαν φίλτρο απόρριψης μικροκινήσεων.
-const int katofliKinisis = 10;          // ποσοστό %, πρέπει >=5
-const int kathisterisi_kinisis = 30;    // καθυστέρηση σε χιλιοστοδευτερόλεπτα, μάλλον >=60
-const int vimaServo = 1;                // βήμα περιστροφής σερβοκινητήρα (1..2)
+const int katofliKinisis = 5;          // ποσοστό %, πρέπει >=5
+const int kathisterisi_kinisis = 60;    // καθυστέρηση σε χιλιοστοδευτερόλεπτα, μάλλον >=60
+const int vimaServo = 3;                // βήμα περιστροφής σερβοκινητήρα (1..2)
 
 void setup() {
   
@@ -74,7 +74,7 @@ void setup() {
   //Αντιστοιχία σέρβο σε ακροδέκτες ελεγκτή
   basi.attach(motor1_Pin);
   panel.attach(motor2_Pin);
-  Serial.println("Servos, OK\n");
+  Serial.println("Servos, OK");
   delay(500);
 
   // Αρχικοποίησε τους αισθητήρες. ### ΑΠΑΡΑΙΤΗΤΟ! ###
@@ -85,10 +85,10 @@ void setup() {
 
 void loop() {
   
-  int lux_B = metraPhotometro(sensor1_Pin);     //  Βορράς
-  int lux_N = metraPhotometro(sensor2_Pin);     //  Νότος
-  int lux_A = metraPhotometro(sensor3_Pin);     //  Ανατολή
-  int lux_D = metraPhotometro(sensor4_Pin);     //  Δύση
+  int lux_B = metraPhotometro(Fotometro1_Pin);     //  Βορράς
+  int lux_N = metraPhotometro(Fotometro2_Pin);     //  Νότος
+  int lux_A = metraPhotometro(Fotometro3_Pin);     //  Ανατολή
+  int lux_D = metraPhotometro(Fotometro4_Pin);     //  Δύση
   int diaf_B_N = lux_B - lux_N;
   int diaf_A_D = lux_A - lux_D;
   int pososto_diafBN = (double)100 * diaf_B_N / lux_B;
@@ -105,39 +105,44 @@ void loop() {
   Serial.print(String(diaf_B_N) + " (" + pososto_diafBN + "%)\t\t");
   Serial.println(String(diaf_A_D) + " (" + pososto_diafAD + "%)");
 
-  Serial.print("To fos erxetai apo katey8ynsi ");
-  if (diaf_B_N > 0)
-    Serial.print("B");
-  else if (diaf_B_N < 0)
-    Serial.print("N");
-    
-  if (diaf_A_D > 0)
-    Serial.print("A");
-  else if (diaf_A_D < 0)
-    Serial.print("D");  
-  Serial.println();
+  if (diaf_B_N != 0 || diaf_A_D != 0) {
+    Serial.print("Fotizomai apo ");
+    if (diaf_B_N > 0)
+      Serial.print("B.");
+    else if (diaf_B_N < 0)
+      Serial.print("N.");
+      
+    if (diaf_A_D > 0)
+      Serial.print("A.");
+    else if (diaf_A_D < 0)
+      Serial.print("D.");  
+    Serial.println();
+  }
 */
   // Κίνησε τα σερβο προς αυτή την κατεύθυνση. Κατάγραψε γωνίες αρθρώσεων
   // Move to this direction. Log joints angles
 
   if (abs(pososto_diafBN) > katofliKinisis) {
     gonia_panel = gonia_panel - vimaServo * prosimo(diaf_B_N);
+    if (gonia_panel < 0) gonia_panel = 0;
+    if (180 < gonia_panel) gonia_panel = 180;
     panel.write(gonia_panel);  // Ο έλεγχος gonia ε [0,180] γίνεται μέσα στη Servo::write
-    //Serial.println(String("Gonia Pano-kato: ") + gonia_panel + " deg");
+    Serial.println(String("Kinoymai katakoryfa se ") + gonia_panel + " moires");
   }
   if (abs(pososto_diafAD) > katofliKinisis) {
     gonia_basis = gonia_basis + vimaServo * prosimo(diaf_A_D);
+    if (gonia_basis < 0) gonia_basis = 0;
+    if (180 < gonia_basis) gonia_basis = 180;
     basi.write(gonia_basis);
-    //Serial.println(String("Gonia Deksia-Aristera: ") + gonia_basis + " deg");
+    Serial.println(String("Kinoymai ozizontia se ") + gonia_basis + " moires");
   }
 
   // καθυστέρηση βρόχου επανάληψης
   delay(kathisterisi_kinisis);
-/*  // ή αναμονή πλήκτρου SEND
-  Serial.println("Pata SEND.");
+  // ή αναμονή πλήκτρου SEND
+  /*Serial.println("Pata SEND.\n");
   while(Serial.available()){Serial.read();}
-  while (!Serial.available()) {}
-  */
+  while (!Serial.available()) {}*/
 }
 
 int prosimo(int val) {return (0 < val) - (val < 0);}
@@ -175,30 +180,31 @@ uint16_t read_BH1750(const byte sensorAddress) {
 void Init_all_BH1750() {
   // Όρισε τους ψηφιακούς ακροδέκτες διεύθυνσης, ως εξόδου. Προκαθορισμένη, είναι η χαμηλή τάση.
   // Sets the digital address pins as output pins. They are by default at low voltage.
-  pinMode(sensor1_Pin, OUTPUT);
-  pinMode(sensor2_Pin, OUTPUT);
-  pinMode(sensor3_Pin, OUTPUT);
-  pinMode(sensor4_Pin, OUTPUT);
+  pinMode(Fotometro1_Pin, OUTPUT);
+  pinMode(Fotometro2_Pin, OUTPUT);
+  pinMode(Fotometro3_Pin, OUTPUT);
+  pinMode(Fotometro4_Pin, OUTPUT);
   
-  digitalWrite(sensor1_Pin, HIGH);
-  Serial.println(F("Sensor #1"));
+  digitalWrite(Fotometro1_Pin, HIGH);
+  Serial.print(F("Fotometro 1: "));
   Init_BH1750(sensorAddressHIGHT);
-  digitalWrite(sensor1_Pin, LOW);
+  digitalWrite(Fotometro1_Pin, LOW);
   
-  digitalWrite(sensor2_Pin, HIGH);
-  Serial.println(F("Sensor #2"));
+  digitalWrite(Fotometro2_Pin, HIGH);
+  Serial.print(F("Fotometro 2: "));
   Init_BH1750(sensorAddressHIGHT);
-  digitalWrite(sensor2_Pin, LOW);
+  digitalWrite(Fotometro2_Pin, LOW);
  
-  digitalWrite(sensor3_Pin, HIGH);
-  Serial.println(F("Sensor #3"));
+  digitalWrite(Fotometro3_Pin, HIGH);
+  Serial.print(F("Fotometro 3: "));
   Init_BH1750(sensorAddressHIGHT);
-  digitalWrite(sensor3_Pin, LOW);
+  digitalWrite(Fotometro3_Pin, LOW);
    
-  digitalWrite(sensor4_Pin, HIGH);
-  Serial.println(F("Sensor #4"));
+  digitalWrite(Fotometro4_Pin, HIGH);
+  Serial.print(F("Fotometro 4: "));
   Init_BH1750(sensorAddressHIGHT);
-  digitalWrite(sensor4_Pin, LOW);
+  digitalWrite(Fotometro4_Pin, LOW);
+  Serial.println();
 }
 
 int Init_BH1750(const byte sensorAddress) {
@@ -210,14 +216,14 @@ int Init_BH1750(const byte sensorAddress) {
   error = write_BH1750(sensorAddress, 0x01);
   if (error != 0)
     return( error);
-  Serial.println(F("Sensor Power-on, OK"));
+  Serial.print(F("Power-on OK, "));
   
   // Θέσε τη συσκευή BH1750 σε λειτουργία "Συνεχούς υψηλής ανάλυσης" (120ms, 1Lux)
   // Sets device BH1750 to Continuous High Resolution mode (120ms, 1Lux)
   error = write_BH1750(sensorAddress, 0x10);
   if (error != 0)
     return( error);
-  Serial.println(F("Sensor resolution set to 1 Lux, OK\n"));
+  Serial.println(F("Resol. 1 Lux"));
 
   return (error);  
 }
