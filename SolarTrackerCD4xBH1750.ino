@@ -7,7 +7,6 @@
 // Τέσσερις πλακέτες GY-30 ή GY-302 με φωτοαισθητήρες BH1750
 // Four Breakboards GY-30 or GY-302 with light sensors BH1750
 
-
 // Βιβλιοθήκη σερβοκινητήρων. RC-Servo Library.
 #include <Servo.h>
 
@@ -16,13 +15,15 @@ Servo panel;   // Κινητήρας πάνελ
 
 int gonia_basis = 90;
 int gonia_panel = 90;
-  
+
 // ακροδέκτες σερβοκινητήρων
 const byte motor1_Pin = 2;
 const byte motor2_Pin = 3;
 
-// Βιβλιοθήκη I²C for AVR. I²C Library for AVR.
+// Βιβλιοθήκη I²C για ελεγκτές AVR. I²C Library for Atmel AVR microcontrollers.
 #include <Wire.h>
+#define SDA_pin A4
+#define SCL_pin A5
 
 // Η τυπική διεύθυνση I²C (TWI) της συσκευής BH1750 είναι 0x23. Μπορεί να αλλάξει στην 0x5C,
 // συνδέοντας τον ακροδέκτη διεύθυνσης (ADDR ή ADD) σε HIGH.
@@ -39,24 +40,21 @@ const byte Fotometro3_Pin = 12;      //  Ανατολή
 const byte Fotometro4_Pin = 13;      //  Δύση
 
 // Ποσοστιαίο κατόφλι διαφοράς φωτεινότητας, δρα σαν φίλτρο απόρριψης μικροκινήσεων.
-const int katofliKinisis = 5;          // ποσοστό %, πρέπει >=5
-const int kathisterisi_kinisis = 60;    // καθυστέρηση σε χιλιοστοδευτερόλεπτα, μάλλον >=60
-const int vimaServo = 3;                // βήμα περιστροφής σερβοκινητήρα (1..2)
+const int katofliKinisis = 10;           // ποσοστό %, πρέπει >=5
+const int kathisterisi_kinisis = 40;    // καθυστέρηση σε χιλιοστοδευτερόλεπτα, μάλλον >=60
+const int vimaServo = 1;                // βήμα περιστροφής σερβοκινητήρα (1..3)
 
 void setup() {
-  
   // Στήσε σειριακή θύρα επικοινωνίας με υπολογιστή
   
-  Serial.begin(9600);
-  Serial.println();
-  Serial.println(F("Serial port, OK"));
+  Serial.begin(9600); Serial.println(F("\nSeriaki OK\n"));
   
-  // Συνδέσου στον δίαυλο I²C των φωτοαισθητήρων, με έλεγχο των γραμμών
-  // Join I²C bus, testing the lines
+  // Συνδέσου στον δίαυλο I²C των φωτοαισθητήρων, με έλεγχο των γραμμών.
+  // Join I²C bus, testing the lines.
   // Οι ακροδέκτες στον δίαυλο I2C-TWI είναι στις θέσεις:
-  // A4 (SDA), A5 (SCL) σε μικροελεγκτή Uno και 20 (SDA), 21 (SCL) σε Mega2560
-  // I2C-TWI pins are located on A4 (SDA), A5 (SCL) on Uno
-  // and 20 (SDA), 21 (SCL) on Mega2560 boards.
+  // A4 (SDA), A5 (SCL) σε μικροελεγκτή Uno και D20 (SDA), D21 (SCL) σε Mega2560
+  // I2C-TWI pins are located on:
+  // A4 (SDA), A5 (SCL) on Uno board and D20 (SDA), D21 (SCL) on Mega2560 board.
   
   if ((digitalRead(A4) == HIGH) && (digitalRead(A5) == HIGH)) { 
     Wire.begin();
@@ -96,29 +94,29 @@ void loop() {
 
   // Καταγραφή απόλυτης φωτινότητας, διαφορών και κατεύθυνσης του φωτός
   // Log absolute lux, difference and light direction
-/*
-  Serial.println("BORRAS-NOTOS\tANATOLH-DYSH");
-  Serial.print(lux_B); Serial.print("-"); Serial.print(lux_N); Serial.print("\t\t");
-  Serial.print(lux_A); Serial.print("-"); Serial.println(lux_D);
 
-  Serial.println("Diaf_BOR-NOT\tDiaf_ANAT-DYS");
-  Serial.print(String(diaf_B_N) + " (" + pososto_diafBN + "%)\t\t");
-  Serial.println(String(diaf_A_D) + " (" + pososto_diafAD + "%)");
+  // Serial.println("BORRAS-NOTOS\tANATOLH-DYSH");
+  // Serial.print(lux_B); Serial.print("-"); Serial.print(lux_N); Serial.print("\t\t");
+  // Serial.print(lux_A); Serial.print("-"); Serial.println(lux_D);
 
-  if (diaf_B_N != 0 || diaf_A_D != 0) {
-    Serial.print("Fotizomai apo ");
-    if (diaf_B_N > 0)
-      Serial.print("B.");
-    else if (diaf_B_N < 0)
-      Serial.print("N.");
+  // Serial.println("Diaf_BOR-NOT\tDiaf_ANAT-DYS");
+  // Serial.print(String(diaf_B_N) + " (" + pososto_diafBN + "%)\t\t");
+  // Serial.println(String(diaf_A_D) + " (" + pososto_diafAD + "%)");
+
+  // if (diaf_B_N != 0 || diaf_A_D != 0) {
+  //   Serial.print("Fotizomai apo ");
+  //   if (diaf_B_N > 0)
+  //     Serial.print("B.");
+  //   else if (diaf_B_N < 0)
+  //     Serial.print("N.");
       
-    if (diaf_A_D > 0)
-      Serial.print("A.");
-    else if (diaf_A_D < 0)
-      Serial.print("D.");  
-    Serial.println();
-  }
-*/
+  //   if (diaf_A_D > 0)
+  //     Serial.print("A.");
+  //   else if (diaf_A_D < 0)
+  //     Serial.print("D.");  
+  //   Serial.println();
+  // }
+
   // Κίνησε τα σερβο προς αυτή την κατεύθυνση. Κατάγραψε γωνίες αρθρώσεων
   // Move to this direction. Log joints angles
 
@@ -127,14 +125,14 @@ void loop() {
     if (gonia_panel < 0) gonia_panel = 0;
     if (180 < gonia_panel) gonia_panel = 180;
     panel.write(gonia_panel);  // Ο έλεγχος gonia ε [0,180] γίνεται μέσα στη Servo::write
-    Serial.println(String("Kinoymai katakoryfa se ") + gonia_panel + " moires");
+    // Serial.println(String("Kinoymai katakoryfa se ") + gonia_panel + " moires");
   }
   if (abs(pososto_diafAD) > katofliKinisis) {
     gonia_basis = gonia_basis + vimaServo * prosimo(diaf_A_D);
     if (gonia_basis < 0) gonia_basis = 0;
     if (180 < gonia_basis) gonia_basis = 180;
     basi.write(gonia_basis);
-    Serial.println(String("Kinoymai ozizontia se ") + gonia_basis + " moires");
+    // Serial.println(String("Kinoymai ozizontia se ") + gonia_basis + " moires");
   }
 
   // καθυστέρηση βρόχου επανάληψης
